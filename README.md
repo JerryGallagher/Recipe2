@@ -77,6 +77,11 @@ Run these in [Cloud Shell](https://shell.cloud.google.com). The service is
 never appears in the service's settings.
 
 ```sh
+# Point Cloud Shell at the project that runs the service. The number is the
+# one in the service's URL (recipe-137185628421....run.app).
+gcloud config set project \
+  $(gcloud projects list --filter="projectNumber=137185628421" --format="value(projectId)")
+
 PROJECT=$(gcloud config get-value project)
 BUCKET=recipe-data-$PROJECT
 SA=$(gcloud run services describe recipe --region europe-west1 \
