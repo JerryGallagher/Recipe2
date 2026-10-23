@@ -72,28 +72,48 @@ repository", build type Dockerfile) so every push to `main` deploys.
 
 ### One-time setup for the admin pages
 
-Run these in [Cloud Shell](https://shell.cloud.google.com), choosing your own
-password. The service is `recipe` in `europe-west1`.
+Run these in [Cloud Shell](https://shell.cloud.google.com). The service is
+`recipe` in `europe-west1`. The admin password is kept in Secret Manager, so it
+never appears in the service's settings.
 
 ```sh
 PROJECT=$(gcloud config get-value project)
 BUCKET=recipe-data-$PROJECT
-gcloud storage buckets create gs://$BUCKET --location=europe-west1 --uniform-bucket-level-access
-
-# Let the service's runtime account read and write the bucket.
 SA=$(gcloud run services describe recipe --region europe-west1 \
   --format='value(spec.template.spec.serviceAccountName)')
 SA=${SA:-$(gcloud projects describe $PROJECT --format='value(projectNumber)')-compute@developer.gserviceaccount.com}
+
+# A bucket the service can read and write.
+gcloud storage buckets create gs://$BUCKET --location=europe-west1 --uniform-bucket-level-access
 gcloud storage buckets add-iam-policy-binding gs://$BUCKET \
   --member=serviceAccount:$SA --role=roles/storage.objectAdmin
 
-# Mount the bucket, point the app at it, set the password, keep one instance.
+# The admin password, as a secret only the service can read.
+# `read -s` asks for it without echoing it or saving it in shell history.
+gcloud services enable secretmanager.googleapis.com
+read -s -p "Admin password: " PW && printf '%s' "$PW" \
+  | gcloud secrets create recipe-admin-password --data-file=- && unset PW
+gcloud secrets add-iam-policy-binding recipe-admin-password \
+  --member=serviceAccount:$SA --role=roles/secretmanager.secretAccessor
+
+# Mount the bucket, pass in the password, keep one instance.
 gcloud run services update recipe --region europe-west1 \
   --execution-environment=gen2 \
   --add-volume=name=data,type=cloud-storage,bucket=$BUCKET,mount-options="uid=65532;gid=65532" \
   --add-volume-mount=volume=data,mount-path=/data \
-  --update-env-vars=BACKUP_PATH=/data/recipes.db,ADMIN_PASSWORD='choose-a-long-password' \
+  --update-env-vars=BACKUP_PATH=/data/recipes.db \
+  --update-secrets=ADMIN_PASSWORD=recipe-admin-password:latest \
   --max-instances=1
 ```
 
 Later deploys from `main` keep these settings.
+
+To change the password, add a new version of the secret and roll out a new
+revision so the app reads it:
+
+```sh
+read -s -p "New admin password: " PW && printf '%s' "$PW" \
+  | gcloud secrets versions add recipe-admin-password --data-file=- && unset PW
+gcloud run services update recipe --region europe-west1 \
+  --update-secrets=ADMIN_PASSWORD=recipe-admin-password:latest
+```
