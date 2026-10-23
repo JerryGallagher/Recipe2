@@ -7,7 +7,7 @@ use askama::Template;
 use axum::{
     Router,
     extract::{Path, State},
-    http::{HeaderMap, StatusCode},
+    http::{HeaderMap, StatusCode, header},
     response::{Html, IntoResponse, Response},
     routing::get,
 };
@@ -126,12 +126,22 @@ async fn show_recipe(
         return Ok((StatusCode::NOT_FOUND, "Recipe not found").into_response());
     };
 
-    let html = if headers.contains_key("HX-Request") {
+    // Boosted links and history restores swap in the whole page, so only a
+    // targeted htmx request (the home page's loader) gets the bare card.
+    let fragment = headers.contains_key("HX-Request")
+        && !headers.contains_key("HX-Boosted")
+        && !headers.contains_key("HX-History-Restore-Request");
+    let html = if fragment {
         RecipeFragmentTemplate { recipe }.render()?
     } else {
         RecipePageTemplate { recipe }.render()?
     };
-    Ok(Html(html).into_response())
+    // The same URL returns two shapes, so caches must key on these headers.
+    let vary = [(
+        header::VARY,
+        "HX-Request, HX-Boosted, HX-History-Restore-Request",
+    )];
+    Ok((vary, Html(html)).into_response())
 }
 
 struct AppError(anyhow::Error);
@@ -221,6 +231,28 @@ mod tests {
         let (status, body) = get_body(app().await, "/recipes/1", true).await;
         assert_eq!(status, StatusCode::OK);
         assert!(!body.contains("<html"));
+        assert!(body.contains("Classic Margherita Pizza"));
+    }
+
+    #[tokio::test]
+    async fn boosted_link_gets_full_page() {
+        let req = Request::builder()
+            .uri("/recipes/1")
+            .header("HX-Request", "true")
+            .header("HX-Boosted", "true")
+            .body(Body::empty())
+            .unwrap();
+        let res = app().await.oneshot(req).await.unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        assert!(
+            res.headers()["Vary"]
+                .to_str()
+                .unwrap()
+                .contains("HX-Request")
+        );
+        let body = to_bytes(res.into_body(), usize::MAX).await.unwrap();
+        let body = String::from_utf8(body.to_vec()).unwrap();
+        assert!(body.contains("site-header"));
         assert!(body.contains("Classic Margherita Pizza"));
     }
 
