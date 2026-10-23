@@ -1,0 +1,69 @@
+:root {
+  --bg: #fdfaf6;
+  --fg: #2b2622;
+  --muted: #6f655c;
+  --accent: #b5452b;
+  --card: #ffffff;
+  --border: #e8e0d6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 17px/1.6 Georgia, "Times New Roman", serif;
+}
+
+.site-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 1.25rem;
+  text-decoration: none;
+}
+
+main {
+  max-width: 44rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.recipe {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem;
+}
+
+.recipe h1 { margin-top: 0; line-height: 1.2; }
+.description { color: var(--muted); font-style: italic; }
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  list-style: none;
+  padding: 1rem 0;
+  margin: 1.5rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-family: system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+
+.meta strong {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ingredients li, .steps li { margin-bottom: 0.5rem; }
+.loading { color: var(--muted); }

@@ -1,0 +1,29 @@
+<article class="recipe" id="recipe-{{ recipe.id }}">
+  <h1>{{ recipe.title }}</h1>
+  <p class="description">{{ recipe.description }}</p>
+
+  <ul class="meta">
+    <li><strong>Serves</strong> {{ recipe.servings }}</li>
+    <li><strong>Prep</strong> {{ recipe.prep_minutes }} min</li>
+    <li><strong>Cook</strong> {{ recipe.cook_minutes }} min</li>
+    <li><strong>Total</strong> {{ recipe.total_minutes() }} min</li>
+  </ul>
+
+  <section>
+    <h2>Ingredients</h2>
+    <ul class="ingredients">
+      {% for item in recipe.ingredients %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Method</h2>
+    <ol class="steps">
+      {% for step in recipe.steps %}
+      <li>{{ step }}</li>
+      {% endfor %}
+    </ol>
+  </section>
+</article>

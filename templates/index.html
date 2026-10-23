@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<div hx-get="/recipes/{{ featured_id }}" hx-trigger="load" hx-swap="outerHTML">
+  <p class="loading">Loading recipe…</p>
+</div>
+{% endblock %}
