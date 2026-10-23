@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Admin · Recipes{% endblock %}
+{% block content %}
+<h1>Add a recipe</h1>
+{% include "recipe_form.html" %}
+
+<h2>Existing recipes</h2>
+{% include "recipe_list.html" %}
+{% endblock %}

@@ -1978,6 +1978,8 @@ dependencies = [
  "anyhow",
  "askama",
  "axum",
+ "base64",
+ "serde",
  "tokio",
  "tower",
  "tower-http",

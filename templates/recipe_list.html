@@ -1,0 +1,10 @@
+<ul class="recipe-list">
+  {% for r in recipes %}
+  <li>
+    <a href="/recipes/{{ r.id }}">{{ r.title }}</a>
+    {% if !r.description.is_empty() %}<p>{{ r.description }}</p>{% endif %}
+  </li>
+  {% else %}
+  <li>No recipes yet.</li>
+  {% endfor %}
+</ul>
