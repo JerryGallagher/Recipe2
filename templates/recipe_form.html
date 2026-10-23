@@ -1,0 +1,37 @@
+<form class="recipe-form" hx-post="/admin/recipes" hx-swap="outerHTML">
+  {% if !errors.is_empty() %}
+  <ul class="errors" role="alert">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <label>Title
+    <input name="title" value="{{ form.title }}" required>
+  </label>
+
+  <label>Description
+    <textarea name="description" rows="2">{{ form.description }}</textarea>
+  </label>
+
+  <div class="row">
+    <label>Serves
+      <input name="servings" type="number" min="1" value="{{ form.servings }}" required>
+    </label>
+    <label>Prep (min)
+      <input name="prep_minutes" type="number" min="0" value="{{ form.prep_minutes }}" required>
+    </label>
+    <label>Cook (min)
+      <input name="cook_minutes" type="number" min="0" value="{{ form.cook_minutes }}" required>
+    </label>
+  </div>
+
+  <label>Ingredients <small>one per line</small>
+    <textarea name="ingredients" rows="8" required>{{ form.ingredients }}</textarea>
+  </label>
+
+  <label>Method <small>one step per line</small>
+    <textarea name="steps" rows="10" required>{{ form.steps }}</textarea>
+  </label>
+
+  <button type="submit">Save recipe</button>
+</form>
